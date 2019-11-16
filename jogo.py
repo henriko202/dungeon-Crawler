@@ -112,6 +112,42 @@ def printaBau():
     screen.blit(text3, (200, 525))
 
 
+def batalhar():
+    done = False
+    keyPress = None
+
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                keyPress = event.key
+
+        screen.blit(tiles.modoDict['I'], (0, 0))
+        text1 = basicfont.render(
+            'É hora do du-du-du-duelo!', True, (0, 0, 0), (255, 255, 255))
+        text2 = basicfont.render(
+            'B - Atacar', True, (0, 0, 0), (255, 255, 255))
+        text3 = basicfont.render(
+            'P - Tomar uma poção', True, (0, 0, 0), (255, 255, 255))
+        text4 = basicfont.render(
+            'F - fujir', True, (0, 0, 0), (255, 255, 255))
+
+        screen.blit(text1, (200, 475))
+        screen.blit(text2, (200, 500))
+        screen.blit(text3, (200, 525))
+        screen.blit(text4, (200, 550))
+        if(keyPress == pygame.K_f):
+            return
+        if(keyPress == pygame.K_b):
+            return
+        if(keyPress == pygame.K_p):
+            return
+        keyPress = None
+        pygame.display.update()
+        clock.tick(100)
+
+
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((1280, 640))
@@ -135,27 +171,25 @@ if __name__ == '__main__':
         mapa.printMap()
         player.mostraStats()
         posAntes = player.pos
-        player.andar(keyPress, mapa.matriz)
-        posDepois = player.pos
         screen.blit(tiles.modoDict[' '], (0, 0))
 
-        if(posAntes != posDepois):
-            batalha = random.randint(0, 10)
-            if(batalha == 10):
-                print("ta aqui")
-                screen.blit(tiles.modoDict['I'], (0, 0))
-                
-        keyPress = None
         if(mapa.matriz[player.pos[0]][player.pos[1]] == "B"):
             screen.blit(tiles.modoDict['B'], (0, 0))
             printaBau()
         if(mapa.matriz[player.pos[0]][player.pos[1]] == "S"):
-            print("achou!")
             player.pos = (1, 1)
             mapaController.gera()
             (map_bits) = mapaController.carregaMap("mapa.txt")
             mapa = Mapa(map_bits)
 
-
+        player.andar(keyPress, mapa.matriz)
+        player.desenhaPlayer()
+        keyPress = None
+        posDepois = player.pos
+        posicao = mapa.matriz[player.pos[0]][player.pos[1]]
+        if(posAntes != posDepois and posicao != "S" and posicao != "B"):
+            batalha = random.randint(0, 10)
+            if(batalha == 10):
+                batalhar()
         pygame.display.update()
         clock.tick(100)
