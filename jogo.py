@@ -2,20 +2,17 @@ import pygame
 import mapaController
 import spriteLoader as tiles
 import random
+import time
+
 
 class Player:
     def __init__(self):
         self.xp = 0
         self.nivel = 0
-        self.vida = 500
         self.sprite_atual = tiles.playerDict[pygame.K_s]
         self.pos = (1, 1)
+        self.status = Stats(50, 21, 5, 1, 3, 10)
 
-        self.forca = 11
-        self.defesa = 21
-        self.acuracia = 5
-        self.destreza = 1
-        self.critico = 3
 
     def mostraStats(self):
         textx = basicfont.render(
@@ -23,17 +20,17 @@ class Player:
         textn = basicfont.render(
             'Nível: ' + str(self.nivel), True, (0, 0, 0), (255, 255, 255))
         textv = basicfont.render(
-            'Vida: ' + str(self.vida), True, (0, 0, 0), (255, 255, 255))
+            'Vida: ' + str(self.status.vida), True, (0, 0, 0), (255, 255, 255))
         textf = basicfont.render(
-            'Força: ' + str(self.forca), True, (0, 0, 0), (255, 255, 255))
+            'Força: ' + str(self.status.forca), True, (0, 0, 0), (255, 255, 255))
         textd = basicfont.render(
-            'Defesa: ' + str(self.defesa), True, (0, 0, 0), (255, 255, 255))
+            'Defesa: ' + str(self.status.defesa), True, (0, 0, 0), (255, 255, 255))
         texta = basicfont.render(
-            'Acurácia: ' + str(self.acuracia), True, (0, 0, 0), (255, 255, 255))
+            'Acurácia: ' + str(self.status.acuracia), True, (0, 0, 0), (255, 255, 255))
         texth = basicfont.render(
-            'Destreza: ' + str(self.destreza), True, (0, 0, 0), (255, 255, 255))
+            'Destreza: ' + str(self.status.destreza), True, (0, 0, 0), (255, 255, 255))
         textc = basicfont.render(
-            'Crítico: ' + str(self.critico), True, (0, 0, 0), (255, 255, 255))
+            'Crítico: ' + str(self.status.critico), True, (0, 0, 0), (255, 255, 255))
 
         screen.blit(textn, (650, 450))
         screen.blit(textx, (750, 450))
@@ -90,23 +87,25 @@ class Mapa:
                     screen.blit(
                         tiles.mapDict[self.matriz[i][j]], (640+j*16, i*16))
 
-'''
+
 class Stats:
-    def __init__(self, lf, pw, cr, ds, ac, de):
-        self.vida = lf
-        self.power = pw
-        self.critico = cr
-        self.destreza = ds
-        self.acuracia = ac
-        self.defesa = de
-'''
+    def __init__(self, vida, forca, critico, destreza, acuracia, defesa):
+        self.vida = vida
+        self.forca = forca
+        self.critico = critico
+        self.destreza = destreza
+        self.acuracia = acuracia
+        self.defesa = defesa
+
 
 class Inimigo:
     def __init__(self):
-        self.vida = random.randint(100, 300)
-        self.forca = random.randint(3, 12)
-        self.defesa = random.randint(5, 15)
-        self.critico = random.randint(2, 5)
+        vida = random.randint(100, 300)
+        forca = random.randint(3, 12)
+        defesa = random.randint(5, 15)
+        critico = random.randint(2, 5)
+        self.status = Stats(vida, forca, critico, 10, 10, defesa)
+
 
 def printaControles():
     text1 = basicfont.render('W - Cima', True, (0, 0, 0), (255, 255, 255))
@@ -114,10 +113,11 @@ def printaControles():
     text2 = basicfont.render('S - Baixo', True, (0, 0, 0), (255, 255, 255))
     text3 = basicfont.render('A - Esquerda', True, (0, 0, 0), (255, 255, 255))
 
-    screen.blit(text1, (50, 475))
-    screen.blit(text2, (50, 500))
-    screen.blit(text3, (50, 525))
-    screen.blit(text4, (50, 550))
+    screen.blit(text1, (850, 475))
+    screen.blit(text2, (850, 500))
+    screen.blit(text3, (850, 525))
+    screen.blit(text4, (850, 550))
+
 
 def printaBau():
     # baú
@@ -128,11 +128,12 @@ def printaBau():
     text3 = basicfont.render(
         'X - Deixar para depois...', True, (0, 0, 0), (255, 255, 255))
 
-    screen.blit(text1, (200, 475))
-    screen.blit(text2, (200, 500))
-    screen.blit(text3, (200, 525))
+    screen.blit(text1, (10, 475))
+    screen.blit(text2, (10, 500))
+    screen.blit(text3, (10, 525))
 
-def batalhar(player):
+
+def batalhar(player, mapa):
     done = False
     keyPress = None
 
@@ -144,19 +145,24 @@ def batalhar(player):
                 exit()
             elif event.type == pygame.KEYDOWN:
                 keyPress = event.key
-        
+
+
+        screen.fill((255, 255, 255))  # fundo da tela
         screen.blit(tiles.modoDict['I'], (0, 0))
+        printaControles()
+        mapa.printMap()
+        player.mostraStats()
         
         text5 = basicfont.render(
-                'Vida do Inimigo: '+ str(inimigo.vida), True, (0, 0, 0), (255, 255, 255)) 
+            'Vida do Inimigo: ' + str(inimigo.status.vida), True, (0, 0, 0), (255, 255, 255))
         text6 = basicfont.render(
-                'Força do Inimigo: '+ str(inimigo.forca), True, (0, 0, 0), (255, 255, 255))
+            'Força do Inimigo: ' + str(inimigo.status.forca), True, (0, 0, 0), (255, 255, 255))
         text7 = basicfont.render(
-                'Defesa do Inimigo: '+ str(inimigo.defesa), True, (0, 0, 0), (255, 255, 255))
-        
-        screen.blit(text5, (200, 475))
-        screen.blit(text6, (200, 500))
-        screen.blit(text7, (200, 525))
+            'Defesa do Inimigo: ' + str(inimigo.status.defesa), True, (0, 0, 0), (255, 255, 255))
+
+        screen.blit(text5, (10, 475))
+        screen.blit(text6, (10, 500))
+        screen.blit(text7, (10, 525))
         text1 = basicfont.render(
             'É hora do du-du-du-duelo!', True, (0, 0, 0), (255, 255, 255))
         text2 = basicfont.render(
@@ -166,60 +172,72 @@ def batalhar(player):
         text4 = basicfont.render(
             'F - fujir', True, (0, 0, 0), (255, 255, 255))
 
-        screen.blit(text1, (200, 560))
-        screen.blit(text2, (200, 585))
-        screen.blit(text3, (200, 610))
-        screen.blit(text4, (200, 635))
+        screen.blit(text1, (200, 475))
+        screen.blit(text2, (200, 500))
+        screen.blit(text3, (200, 525))
+        screen.blit(text4, (200, 550))
 
-        #se fugir
+        # se fugir
         if(keyPress == pygame.K_f):
             text5 = basicfont.render(
-            'Você fugiu !', True, (0, 0, 0), (255, 255, 255))
-            screen.blit(text5, (200, 450)) 
-            
+                'Você fugiu !', True, (0, 0, 0), (255, 255, 255))
+            screen.blit(text5, (200, 450))
+            time.sleep(3)
+            return
+
         if(keyPress == pygame.K_b):
             dano = ataquecritico(player)
 
             text8 = basicfont.render(
                 'Dano de ' + str(dano) + ' no inimigo!', True, (0, 0, 0), (255, 255, 255))
-            screen.blit(text8, (200, 500))
-            
-            inimigo.vida = inimigo.vida - dano 
+            screen.blit(text8, (10, 600))
 
-            if (inimigo.vida < 0):
+            inimigo.status.vida = inimigo.status.vida - dano
+
+            if (inimigo.status.vida < 0):
                 text10 = basicfont.render(
                     'Você derrotou o inimigo!', True, (0, 0, 0), (255, 255, 255))
-                screen.blit(text10, (200, 550))
+                screen.blit(text10, (200, 575))
                 return
 
             dano_inimigo = ataquecritico(inimigo)
 
             text9 = basicfont.render(
                 'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
-            screen.blit(text9, (200, 550))
+            screen.blit(text9, (10, 700))
 
-            player.vida = player.vida - dano_inimigo
+            player.status.vida = player.status.vida - dano_inimigo
 
-            if (player.vida < 0):
+            if (player.status.vida <= 0):
                 text10 = basicfont.render(
                     'Você morreu!', True, (0, 0, 0), (255, 255, 255))
-                screen.blit(text10, (200, 550))
+                screen.blit(text10, (200, 575))
+                pygame.display.update()
+                time.sleep(3)
+                player.pos = (1, 1)
+                player.status = Stats(50, 21, 5, 1, 3, 10)
+                mapaController.gera()
+                (map_bits) = mapaController.carregaMap("mapa.txt")
+                mapa.matriz = (map_bits)
                 return
-            
+
         if(keyPress == pygame.K_p):
             return
 
+        player.mostraStats()
         keyPress = None
         pygame.display.update()
         clock.tick(100)
 
+
 def ataquecritico(personagem):
-    critico = random.randint(0, personagem.critico)
-    if(critico == player.critico):
-        ataque = player.forca * player.critico
+    critico = random.randint(0, personagem.status.critico)
+    if(critico == personagem.status.critico):
+        ataque = personagem.status.forca * personagem.status.critico
     else:
-        ataque = player.forca
-    return ataque 
+        ataque = personagem.status.forca
+    return ataque
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -261,8 +279,8 @@ if __name__ == '__main__':
         posDepois = player.pos
         posicao = mapa.matriz[player.pos[0]][player.pos[1]]
         if(posAntes != posDepois and posicao != "S" and posicao != "B"):
-            batalha = random.randint(0, 69)
-            if(batalha == 69):
-                batalhar(player)
+            batalha = random.randint(0, 10)
+            if(batalha == 10):
+                batalhar(player, mapa)
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(100)
