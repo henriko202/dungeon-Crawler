@@ -188,8 +188,8 @@ if __name__ == '__main__':
         posDepois = player.pos
         posicao = mapa.matriz[player.pos[0]][player.pos[1]]
         if(posAntes != posDepois and posicao != "S" and posicao != "B"):
-            batalha = random.randint(0, 10)
-            if(batalha == 10):
+            batalha = random.randint(0, 69)
+            if(batalha == 69):
                 batalhar()
         pygame.display.update()
-        clock.tick(100)
+        clock.tick(60)
