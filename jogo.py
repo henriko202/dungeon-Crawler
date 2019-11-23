@@ -93,6 +93,7 @@ class Mapa:
         self.matriz = mapa
         self.fog = None
         self.level = 1
+        self.baus = []
 
     def printMap(self):
         for i in range(0, len(self.matriz)):
@@ -105,6 +106,29 @@ class Mapa:
                 else:
                     screen.blit(
                         tiles.mapDict[self.matriz[i][j]], (640+j*16, i*16))
+
+    def geraItens(self, nivel, posx, posy):
+        self.pocoes = random.randint(1, 4*nivel)
+        self.vida = random.randint(5, 10*nivel)
+        self.forca = random.randint(5, 10*nivel)
+        self.critico = random.randint(5, 10*nivel)
+        self.destreza = random.randint(5, 10*nivel)
+        self.acuracia = random.randint(5, 10*nivel)
+        self.defesa = random.randint(5, 10*nivel)
+        self.status = Stats(self.vida, self.forca, self.critico,
+                            self.destreza, self.acuracia, self.defesa)
+        self.arma = None
+        self.armadura = None
+
+        if(random.randint(1, 2) == 2):
+            self.arma = self.status
+        else:
+            self.armadura = self.status
+        
+        # ao chegar num baú, executa essa função de gerar os itens
+        # guarda a posição desse baú, ao executar, verifica se já existe
+        # se não existir, gera mais itens
+        # itens baseados no nível
 
 
 class Stats:
@@ -255,7 +279,7 @@ def batalhar(player, mapa):
                 player.pos = (1, 1)
                 player.maxHP = 100
                 player.weapon, player.armor, player.xp = 0, 0, 0
-                player.status = Stats(50, 10, 10, 10, 10, 10)
+                player.status = Stats(100, 10, 10, 10, 10, 10)
                 mapaController.gera()
                 (map_bits) = mapaController.carregaMap("mapa.txt")
                 mapa.matriz = (map_bits)
