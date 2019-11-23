@@ -11,8 +11,8 @@ class Player:
         self.nivel = 0
         self.sprite_atual = tiles.playerDict[pygame.K_s]
         self.pos = (1, 1)
-        self.maxHP = 200
-        self.status = Stats(self.maxHP, 21, 5, 1, 3, 10)
+        self.maxHP = 100
+        self.status = Stats(self.maxHP, 10, 10, 10, 10, 10)
         self.potions = 0
         self.weapon = 0
         self.armor = 0
@@ -21,9 +21,16 @@ class Player:
         self.xp += quantidade
         if(self.xp % 100 >= 1):
             while (self.xp > 100):
-                if(self.xp %100 >= 1):
+                if(self.xp % 100 >= 1):
                     self.nivel += 1
-                    self.xp -=100
+                    self.xp -= 100
+                    self.maxHP += 50
+                    self.status.vida = self.maxHP
+                    self.status.acuracia += random.randint(0, 10) + self.nivel
+                    self.status.critico += random.randint(0, 10) + self.nivel
+                    self.status.defesa += random.randint(0, 10) + self.nivel
+                    self.status.destreza += random.randint(0, 10) + self.nivel
+                    self.status.forca += random.randint(0, 10) + self.nivel
 
     def mostraStats(self):
         textXP = basicfont.render(
@@ -85,6 +92,7 @@ class Mapa:
     def __init__(self, mapa):
         self.matriz = mapa
         self.fog = None
+        self.level = 1
 
     def printMap(self):
         for i in range(0, len(self.matriz)):
@@ -110,12 +118,18 @@ class Stats:
 
 
 class Inimigo:
-    def __init__(self):
-        self.vida = random.randint(100, 300)
-        forca = random.randint(3, 12)
-        defesa = random.randint(5, 15)
-        critico = random.randint(2, 5)
-        self.status = Stats(self.vida, forca, critico, 10, 10, defesa)
+    def __init__(self, level, player):
+        self.nivel = 1
+        if(player.nivel > 0):
+            self.nivel = player.nivel
+        self.vida = random.randint(50, 90*level*self.nivel)
+        forca = random.randint(10, 20*level*self.nivel)
+        defesa = random.randint(10, 20*level*self.nivel)
+        critico = random.randint(10, 20*level*self.nivel)
+        destreza = random.randint(10, 20*level*self.nivel)
+        acuracia = random.randint(10, 20*level*self.nivel)
+        self.status = Stats(self.vida, forca, critico,
+                            destreza, acuracia, defesa)
 
 
 def printaControles():
@@ -148,7 +162,7 @@ def batalhar(player, mapa):
     done = False
     keyPress = None
 
-    inimigo = Inimigo()
+    inimigo = Inimigo(mapa.level, player)
 
     while not done:
         for event in pygame.event.get():
@@ -203,13 +217,17 @@ def batalhar(player, mapa):
             text8 = basicfont.render(
                 'Dano de ' + str(dano) + ' no inimigo!', True, (0, 0, 0), (255, 255, 255))
             screen.blit(text8, (10, 600))
-
-            inimigo.status.vida = inimigo.status.vida - dano
-
+            if(random.randint(1, inimigo.status.destreza) <= player.status.acuracia):
+                inimigo.status.vida = inimigo.status.vida - dano
+            else:
+                text8 = basicfont.render(
+                    'Você errou o ataque no inimigo!', True, (0, 0, 0), (255, 255, 255))
+            screen.blit(text8, (10, 600))
             if (inimigo.status.vida < 0):
                 text10 = basicfont.render(
                     'Você derrotou o inimigo!', True, (0, 0, 0), (255, 255, 255))
-                player.adicionaXP(random.randint(50, inimigo.vida))
+                player.adicionaXP(random.randint(
+                    50, inimigo.vida if inimigo.vida > 50 else 100))
                 screen.blit(text10, (200, 200))
                 pygame.display.update()
                 time.sleep(2)
@@ -217,11 +235,15 @@ def batalhar(player, mapa):
 
             dano_inimigo = ataquecritico(inimigo)
 
-            text9 = basicfont.render(
-                'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
-            screen.blit(text9, (10, 700))
-
-            player.status.vida = player.status.vida - dano_inimigo
+            if(random.randint(1, player.status.destreza) <= inimigo.status.acuracia):
+                player.status.vida = player.status.vida - dano_inimigo
+                text9 = basicfont.render(
+                    'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
+                screen.blit(text9, (10, 575))
+            else:
+                text9 = basicfont.render(
+                    'Inimigo erra ataque em você!', True, (0, 0, 0), (255, 255, 255))
+                screen.blit(text9, (10, 575))
 
             if (player.status.vida <= 0):
                 text10 = basicfont.render(
@@ -231,11 +253,15 @@ def batalhar(player, mapa):
                 pygame.display.update()
                 time.sleep(2)
                 player.pos = (1, 1)
-                player.status = Stats(50, 21, 5, 1, 3, 10)
+                player.maxHP = 100
+                player.weapon, player.armor, player.xp = 0, 0, 0
+                player.status = Stats(50, 10, 10, 10, 10, 10)
                 mapaController.gera()
                 (map_bits) = mapaController.carregaMap("mapa.txt")
                 mapa.matriz = (map_bits)
                 return
+            pygame.display.update()
+            time.sleep(0.5)
 
         if(keyPress == pygame.K_p):
             return
@@ -249,7 +275,7 @@ def batalhar(player, mapa):
 def ataquecritico(personagem):
     critico = random.randint(0, personagem.status.critico)
     if(critico == personagem.status.critico):
-        ataque = personagem.status.forca * personagem.status.critico
+        ataque = personagem.status.forca * 2
     else:
         ataque = personagem.status.forca
     return ataque
@@ -287,6 +313,7 @@ if __name__ == '__main__':
             mapaController.gera()
             (map_bits) = mapaController.carregaMap("mapa.txt")
             mapa = Mapa(map_bits)
+            mapa.level += 1
 
         player.andar(keyPress, mapa.matriz)
         player.mostraStats()
@@ -299,4 +326,4 @@ if __name__ == '__main__':
             if(batalha == 10):
                 batalhar(player, mapa)
         pygame.display.update()
-        clock.tick(8)
+        clock.tick(60)
