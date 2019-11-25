@@ -228,12 +228,29 @@ def batalhar(player, mapa):
 
         # se fugir
         if(keyPress == pygame.K_f):
-            text5 = basicfont.render(
-                'Você fugiu !', True, (0, 0, 0), (255, 255, 255))
-            screen.blit(text5, (200, 200))
+            fugir = random.randint(0, player.status.destreza)
+            
+            if(fugir == player.status.destreza):
+                text5 = basicfont.render(
+                    'Você fugiu !', True, (0, 0, 0), (255, 255, 255))
+                screen.blit(text5, (200, 200))
+                return
+            
+            else:
+                text5 = basicfont.render(
+                    'Você não conseguiu fugir !', True, (0, 0, 0), (255, 255, 255))
+                screen.blit(text5, (200, 200))
+
+                dano_inimigo = ataquecritico(inimigo)
+
+                if(random.randint(1, player.status.destreza) <= inimigo.status.acuracia):
+                    player.status.vida = player.status.vida - dano_inimigo
+                    text9 = basicfont.render(
+                        'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
+                    screen.blit(text9, (10, 575))
+            
             pygame.display.update()
             time.sleep(2)
-            return
 
         if(keyPress == pygame.K_b):
             dano = ataquecritico(player)
@@ -287,8 +304,14 @@ def batalhar(player, mapa):
             pygame.display.update()
             time.sleep(0.5)
 
+        # se tomar poção
         if(keyPress == pygame.K_p):
-            return
+            if (player.potions == 0):
+                text11 = basicfont.render(
+                    'Você não tem poções!', True, (0, 0, 0), (255, 255, 255))
+                screen.blit(text11, (200, 200))
+            pygame.display.update()
+            time.sleep(0.5)
 
         player.mostraStats()
         keyPress = None
