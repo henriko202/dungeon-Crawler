@@ -3,19 +3,23 @@ import mapaController
 import spriteLoader as tiles
 import random
 import time
+import os
+import sys
 
 
 class Player:
     def __init__(self):
         self.xp = 0
-        self.nivel = 0
+        self.nivel = 1
         self.sprite_atual = tiles.playerDict[pygame.K_s]
+        # 24, 35 (final em cima)
+        # 25, 34 (final esquerda)
         self.pos = (1, 1)
         self.maxHP = 100
         self.status = Stats(self.maxHP, 10, 10, 10, 10, 10)
         self.potions = 0
-        self.weapon = 0
-        self.armor = 0
+        self.weapon = Stats(0, 0, 0, 0, 0, 0)
+        self.armor = Stats(0, 0, 0, 0, 0, 0)
 
     def adicionaXP(self, quantidade):
         self.xp += quantidade
@@ -37,27 +41,42 @@ class Player:
             'XP: ' + str(self.xp), True, (0, 0, 0), (255, 255, 255))
         txtLVL = basicfont.render(
             'Nível: ' + str(self.nivel), True, (0, 0, 0), (255, 255, 255))
+        txtArmorHP = " +" + str(self.armor.vida)
+        txtWeaponHP = " +" + str(self.weapon.vida)
         txtHP = basicfont.render(
-            'Vida: ' + str(self.status.vida), True, (0, 0, 0), (255, 255, 255))
-        textf = basicfont.render(
-            'Força: ' + str(self.status.forca), True, (0, 0, 0), (255, 255, 255))
-        textd = basicfont.render(
-            'Defesa: ' + str(self.status.defesa), True, (0, 0, 0), (255, 255, 255))
-        texta = basicfont.render(
-            'Acurácia: ' + str(self.status.acuracia), True, (0, 0, 0), (255, 255, 255))
-        texth = basicfont.render(
-            'Destreza: ' + str(self.status.destreza), True, (0, 0, 0), (255, 255, 255))
-        textc = basicfont.render(
-            'Crítico: ' + str(self.status.critico), True, (0, 0, 0), (255, 255, 255))
-
+            'Vida: ' + str(self.status.vida) + txtArmorHP + txtWeaponHP, True, (0, 0, 0), (255, 255, 255))
+        txtArmorF = " +" + str(self.armor.forca)
+        txtWeaponF = " +" + str(self.weapon.forca)
+        txtForca = basicfont.render(
+            'Força: ' + str(self.status.forca) + txtArmorF + txtWeaponF, True, (0, 0, 0), (255, 255, 255))
+        txtArmorD = " +" + str(self.armor.defesa)
+        txtWeaponD = " +" + str(self.weapon.defesa)
+        txtDefesa = basicfont.render(
+            'Defesa: ' + str(self.status.defesa) + txtArmorD + txtWeaponD, True, (0, 0, 0), (255, 255, 255))
+        txtArmorA = " +" + str(self.armor.acuracia)
+        txtWeaponA = " +" + str(self.weapon.acuracia)
+        txtAcura = basicfont.render(
+            'Acurácia: ' + str(self.status.acuracia) + txtArmorA + txtWeaponA, True, (0, 0, 0), (255, 255, 255))
+        txtArmorH = " +" + str(self.armor.destreza)
+        txtWeaponH = " +" + str(self.weapon.destreza)
+        txtDex = basicfont.render(
+            'Destreza: ' + str(self.status.destreza) + txtArmorH + txtWeaponH, True, (0, 0, 0), (255, 255, 255))
+        txtArmorC = " +" + str(self.armor.critico)
+        txtWeaponC = " +" + str(self.weapon.critico)
+        txtCrit = basicfont.render(
+            'Crítico: ' + str(self.status.critico) + txtArmorC + txtWeaponC, True, (0, 0, 0), (255, 255, 255))
+        textP = basicfont.render(
+            'Poções: ' + str(self.potions), True, (0, 0, 0), (255, 255, 255))
+        #  forca, critico, destreza, acuracia, defesa
         screen.blit(txtLVL, (5, 5))
         screen.blit(textXP, (100, 5))
         screen.blit(txtHP, (200, 5))
-        screen.blit(textf, (650, 450))
-        screen.blit(textd, (650, 475))
-        screen.blit(texta, (650, 500))
-        screen.blit(texth, (650, 525))
-        screen.blit(textc, (650, 550))
+        screen.blit(txtForca, (650, 450))
+        screen.blit(txtCrit, (650, 475))
+        screen.blit(txtDex, (650, 500))
+        screen.blit(txtDefesa, (650, 525))
+        screen.blit(txtAcura, (650, 550))
+        screen.blit(textP, (650, 575))
 
     def andar(self, direcao, mapa):
         x = self.pos[0]
@@ -88,6 +107,60 @@ class Player:
                     (640+self.pos[1]*16, self.pos[0]*16))
 
 
+class Bau:
+    def __init__(self, i, j):
+        self.pos = (i, j)
+        self.potions = 0
+        self.arma = None
+        self.armadura = None
+
+    def printaBau(self, mapa, player):
+        keyPress = None
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+                elif event.type == pygame.KEYDOWN:
+                    keyPress = event.key
+
+            text1 = basicfont.render(
+                'Baú achado!', True, (0, 0, 0), (255, 255, 255))
+            string = None
+            if(self.arma):
+                # vida, forca, critico, destreza, acuracia, defesa
+                string = "Arma: +{} +{} +{} +{} +{} +{}".format(
+                    self.arma.vida, self.arma.forca, self.arma.critico, self.arma.destreza, self.arma.acuracia, self.arma.defesa)
+            else:
+                string = "Armadura: +{} +{} +{} +{} +{} +{}".format(
+                    self.armadura.vida, self.armadura.forca, self.armadura.critico, self.armadura.destreza, self.armadura.acuracia, self.armadura.defesa)
+            text2 = basicfont.render(
+                'C - Pegar itens', True, (0, 0, 0), (255, 255, 255))
+            text3 = basicfont.render(
+                'X - Deixar para depois...', True, (0, 0, 0), (255, 255, 255))
+            conteudo = basicfont.render(
+                string, True, (0, 0, 0), (255, 255, 255))
+            pocoes = basicfont.render(
+                "E " + str(self.potions) + " poções", True, (0, 0, 0), (255, 255, 255))
+
+            screen.blit(text1, (10, 475))
+            screen.blit(conteudo, (10, 500))
+            screen.blit(pocoes, (10, 525))
+            screen.blit(text2, (10, 550))
+            screen.blit(text3, (10, 575))
+            pygame.display.update()
+
+            if(keyPress == pygame.K_c):
+                mapa.matriz[self.pos[0]][self.pos[1]] = "0"
+                if(self.arma):
+                    player.weapon = self.arma
+                else:
+                    player.armor = self.armadura
+                player.potions += self.potions
+                return
+            if(keyPress == pygame.K_x):
+                return
+
+
 class Mapa:
     def __init__(self, mapa):
         self.matriz = mapa
@@ -106,25 +179,37 @@ class Mapa:
                 else:
                     screen.blit(
                         tiles.mapDict[self.matriz[i][j]], (640+j*16, i*16))
+        text1 = basicfont.render(
+            'Profundidade: ' + str(self.level), True, (0, 0, 0), (255, 255, 255))
+        screen.blit(text1, (975, 450))
 
-    def geraItens(self, nivel, posx, posy):
-        self.pocoes = random.randint(1, 4*nivel)
-        self.vida = random.randint(5, 10*nivel)
-        self.forca = random.randint(5, 10*nivel)
-        self.critico = random.randint(5, 10*nivel)
-        self.destreza = random.randint(5, 10*nivel)
-        self.acuracia = random.randint(5, 10*nivel)
-        self.defesa = random.randint(5, 10*nivel)
-        self.status = Stats(self.vida, self.forca, self.critico,
-                            self.destreza, self.acuracia, self.defesa)
-        self.arma = None
-        self.armadura = None
+    def contaBaus(self):
+        qtdeBaus = 0
+        for pos in self.matriz:
+            if pos == "B":
+                qtdeBaus += 1
+        return qtdeBaus
 
-        if(random.randint(1, 2) == 2):
-            self.arma = self.status
-        else:
-            self.armadura = self.status
-        
+    def geraItens(self, nivel, mapa):
+        for i in range(0, len(self.matriz)):
+            for j in range(0, len(self.matriz[i])):
+                if(self.matriz[i][j] == "B"):
+                    bau = Bau(i, j)
+                    bau.potions = random.randint(1, 3*nivel)
+                    self.vida = random.randint(5, 10*nivel)
+                    self.forca = random.randint(5, 10*nivel)
+                    self.critico = random.randint(5, 10*nivel)
+                    self.destreza = random.randint(5, 10*nivel)
+                    self.acuracia = random.randint(5, 10*nivel)
+                    self.defesa = random.randint(5, 10*nivel)
+                    self.status = Stats(self.vida, self.forca, self.critico,
+                                        self.destreza, self.acuracia, self.defesa)
+                    if(random.randint(1, 2) == 2):
+                        bau.arma = self.status
+                    else:
+                        bau.armadura = self.status
+                    mapa.baus.append(bau)
+
         # ao chegar num baú, executa essa função de gerar os itens
         # guarda a posição desse baú, ao executar, verifica se já existe
         # se não existir, gera mais itens
@@ -147,11 +232,11 @@ class Inimigo:
         if(player.nivel > 0):
             self.nivel = player.nivel
         self.vida = random.randint(50, 90*level*self.nivel)
-        forca = random.randint(10, 20*level*self.nivel)
-        defesa = random.randint(10, 20*level*self.nivel)
-        critico = random.randint(10, 20*level*self.nivel)
-        destreza = random.randint(10, 20*level*self.nivel)
-        acuracia = random.randint(10, 20*level*self.nivel)
+        forca = random.randint(8, 14*level*self.nivel)
+        defesa = random.randint(8, 14*level*self.nivel)
+        critico = random.randint(8, 14*level*self.nivel)
+        destreza = random.randint(8, 14*level*self.nivel)
+        acuracia = random.randint(8, 14*level*self.nivel)
         self.status = Stats(self.vida, forca, critico,
                             destreza, acuracia, defesa)
 
@@ -166,20 +251,6 @@ def printaControles():
     screen.blit(text2, (875, 475))
     screen.blit(text3, (875, 500))
     screen.blit(text4, (875, 525))
-
-
-def printaBau():
-    # baú
-    text1 = basicfont.render(
-        'Baú achado!', True, (0, 0, 0), (255, 255, 255))
-    text2 = basicfont.render(
-        'C - Pegar itens', True, (0, 0, 0), (255, 255, 255))
-    text3 = basicfont.render(
-        'X - Deixar para depois...', True, (0, 0, 0), (255, 255, 255))
-
-    screen.blit(text1, (10, 475))
-    screen.blit(text2, (10, 500))
-    screen.blit(text3, (10, 525))
 
 
 def batalhar(player, mapa):
@@ -229,17 +300,16 @@ def batalhar(player, mapa):
         # se fugir
         if(keyPress == pygame.K_f):
             fugir = random.randint(0, player.status.destreza)
-            
-            if(fugir == player.status.destreza):
+            if(fugir >= inimigo.status.destreza):
                 text5 = basicfont.render(
-                    'Você fugiu !', True, (0, 0, 0), (255, 255, 255))
+                    'Você fugiu!', True, (0, 0, 0), (255, 255, 255))
                 screen.blit(text5, (200, 200))
                 return
-            
+
             else:
                 text5 = basicfont.render(
-                    'Você não conseguiu fugir !', True, (0, 0, 0), (255, 255, 255))
-                screen.blit(text5, (200, 200))
+                    'Você não conseguiu fugir!', True, (0, 0, 0), (255, 255, 255))
+                screen.blit(text5, (200, 150))
 
                 dano_inimigo = ataquecritico(inimigo)
 
@@ -248,9 +318,19 @@ def batalhar(player, mapa):
                     text9 = basicfont.render(
                         'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
                     screen.blit(text9, (10, 575))
-            
+
+                if (player.status.vida <= 0):
+                    text10 = basicfont.render(
+                        'Você morreu!', True, (0, 0, 0), (255, 255, 255))
+                    screen.blit(text10, (200, 200))
+                    player.mostraStats()
+                    pygame.display.update()
+                    time.sleep(0.5)
+                    python = sys.executable
+                    os.execl(python, python, *sys.argv)
+                    return
             pygame.display.update()
-            time.sleep(2)
+            time.sleep(0.5)
 
         if(keyPress == pygame.K_b):
             dano = ataquecritico(player)
@@ -271,7 +351,7 @@ def batalhar(player, mapa):
                     50, inimigo.vida if inimigo.vida > 50 else 100))
                 screen.blit(text10, (200, 200))
                 pygame.display.update()
-                time.sleep(2)
+                time.sleep(0.5)
                 return
 
             dano_inimigo = ataquecritico(inimigo)
@@ -292,14 +372,19 @@ def batalhar(player, mapa):
                 screen.blit(text10, (200, 200))
                 player.mostraStats()
                 pygame.display.update()
-                time.sleep(2)
-                player.pos = (1, 1)
-                player.maxHP = 100
-                player.weapon, player.armor, player.xp = 0, 0, 0
-                player.status = Stats(100, 10, 10, 10, 10, 10)
-                mapaController.gera()
-                (map_bits) = mapaController.carregaMap("mapa.txt")
-                mapa.matriz = (map_bits)
+                time.sleep(0.5)
+                # player.pos = (1, 1)
+                # player.maxHP = 100
+                # player.weapon = Stats(0, 0, 0, 0, 0, 0)
+                # player.armor = Stats(0, 0, 0, 0, 0, 0)
+                # player.xp = 0
+                # player.status = Stats(100, 10, 10, 10, 10, 10)
+                # mapaController.gera()
+                # (map_bits) = mapaController.carregaMap("mapa.txt")
+                # mapa.geraItens(player.nivel, mapa)
+                # mapa.matriz = (map_bits)
+                python = sys.executable
+                os.execl(python, python, *sys.argv)
                 return
             pygame.display.update()
             time.sleep(0.5)
@@ -310,6 +395,50 @@ def batalhar(player, mapa):
                 text11 = basicfont.render(
                     'Você não tem poções!', True, (0, 0, 0), (255, 255, 255))
                 screen.blit(text11, (200, 200))
+            elif (player.maxHP == player.status.vida):
+                text11 = basicfont.render(
+                    'Você está com a vida cheia!', True, (0, 0, 0), (255, 255, 255))
+                screen.blit(text11, (200, 200))
+            else:
+                player.status.vida += 50*player.nivel
+                player.potions -= 1
+                if(player.status.vida > player.maxHP):
+                    player.status.vida = player.maxHP
+
+                dano_inimigo = ataquecritico(inimigo)
+
+                if(random.randint(1, player.status.destreza) <= inimigo.status.acuracia):
+                    player.status.vida -= dano_inimigo
+                    text9 = basicfont.render(
+                        'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
+                    screen.blit(text9, (10, 575))
+                else:
+                    text9 = basicfont.render(
+                        'Inimigo erra ataque em você!', True, (0, 0, 0), (255, 255, 255))
+                    screen.blit(text9, (10, 575))
+
+                if (player.status.vida <= 0):
+                    text10 = basicfont.render(
+                        'Você morreu!', True, (0, 0, 0), (255, 255, 255))
+                    screen.blit(text10, (200, 200))
+                    player.mostraStats()
+                    pygame.display.update()
+                    time.sleep(0.5)
+                    # player.pos = (1, 1)
+                    # player.maxHP = 100
+                    # player.nivel = 0
+                    # player.weapon = Stats(0, 0, 0, 0, 0, 0)
+                    # player.armor = Stats(0, 0, 0, 0, 0, 0)
+                    # player.xp = 0
+                    # player.status = Stats(100, 10, 10, 10, 10, 10)
+                    # mapaController.gera()
+                    # (map_bits) = mapaController.carregaMap("mapa.txt")
+                    # mapa.geraItens(player.nivel, mapa)
+                    # mapa.matriz = (map_bits)
+                    python = sys.executable
+                    os.execl(python, python, *sys.argv)
+                    return
+
             pygame.display.update()
             time.sleep(0.5)
 
@@ -330,13 +459,14 @@ def ataquecritico(personagem):
 
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((1280, 640))
+    screen = pygame.display.set_mode((1235, 625))
     clock = pygame.time.Clock()
     done = False
     mapaController.gera()
     (map_bits) = mapaController.carregaMap("mapa.txt")
     mapa = Mapa(map_bits)
     player = Player()
+    mapa.geraItens(player.nivel, mapa)
     basicfont = pygame.font.SysFont(None, 25)
     keyPress = None
     while not done:
@@ -351,20 +481,23 @@ if __name__ == '__main__':
         mapa.printMap()
         posAntes = player.pos
         screen.blit(tiles.modoDict[' '], (0, 0))
-
+        player.mostraStats()
+        player.desenhaPlayer()
         if(mapa.matriz[player.pos[0]][player.pos[1]] == "B"):
             screen.blit(tiles.modoDict['B'], (0, 0))
-            printaBau()
+            for conteudo in mapa.baus:
+                if(conteudo.pos == player.pos):
+                    conteudo.printaBau(mapa, player)
+
         if(mapa.matriz[player.pos[0]][player.pos[1]] == "S"):
             player.pos = (1, 1)
             mapaController.gera()
             (map_bits) = mapaController.carregaMap("mapa.txt")
             mapa = Mapa(map_bits)
             mapa.level += 1
+            mapa.geraItens(player.nivel, mapa)
 
         player.andar(keyPress, mapa.matriz)
-        player.mostraStats()
-        player.desenhaPlayer()
         keyPress = None
         posDepois = player.pos
         posicao = mapa.matriz[player.pos[0]][player.pos[1]]

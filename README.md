@@ -4,8 +4,7 @@ A simple Dungeon Crawler game made in python
 
 # To-Do
 
-* Adicionar items (armas, armaduras e poções)
-* Trocar item atual com o do baú
-* Guardar possíveis itens de baú em um vetor (3 itens, 3 quantidades de poção, linkar posição do mapa com itens do baú, Classe baú, contendo itens, criar novamente todo nível)
-* Melhorar status ao pegar arma
-* 
+* Comparar com arma e armadura nas batalhas e etc
+* Deixar itens do bau para depois
+* Adicionar fog
+* Resetar tudo ao invés de reabrir o jogo (fica mais bonito)
