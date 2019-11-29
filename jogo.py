@@ -299,7 +299,7 @@ def batalhar(player, mapa):
 
         # se fugir
         if(keyPress == pygame.K_f):
-            fugir = random.randint(0, player.status.destreza)
+            fugir = random.randint(0, player.status.destreza + player.armor.destreza + player.weapon.destreza)
             if(fugir >= inimigo.status.destreza):
                 text5 = basicfont.render(
                     'Você fugiu!', True, (0, 0, 0), (255, 255, 255))
@@ -311,10 +311,10 @@ def batalhar(player, mapa):
                     'Você não conseguiu fugir!', True, (0, 0, 0), (255, 255, 255))
                 screen.blit(text5, (200, 150))
 
-                dano_inimigo = ataquecritico(inimigo)
+                dano_inimigo = ataquecritico_inimigo(inimigo)
 
-                if(random.randint(1, player.status.destreza) <= inimigo.status.acuracia):
-                    player.status.vida = player.status.vida - dano_inimigo
+                if(random.randint(1, player.status.destreza + player.armor.destreza + player.weapon.destreza) <= inimigo.status.acuracia):
+                    player.status.vida = (player.status.vida + player.armor.vida + player.weapon.vida)- dano_inimigo
                     text9 = basicfont.render(
                         'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
                     screen.blit(text9, (10, 575))
@@ -333,18 +333,18 @@ def batalhar(player, mapa):
             time.sleep(0.5)
 
         if(keyPress == pygame.K_b):
-            dano = ataquecritico(player)
+            dano = ataquecritico_player(player)
 
             text8 = basicfont.render(
                 'Dano de ' + str(dano) + ' no inimigo!', True, (0, 0, 0), (255, 255, 255))
             screen.blit(text8, (10, 600))
-            if(random.randint(1, inimigo.status.destreza) <= player.status.acuracia):
+            if(random.randint(1, inimigo.status.destreza) <= player.status.acuracia + player.armor.acuracia + player.weapon.acuracia):
                 inimigo.status.vida = inimigo.status.vida - dano
             else:
                 text8 = basicfont.render(
                     'Você errou o ataque no inimigo!', True, (0, 0, 0), (255, 255, 255))
             screen.blit(text8, (10, 600))
-            if (inimigo.status.vida < 0):
+            if (inimigo.status.vida <= 0):
                 text10 = basicfont.render(
                     'Você derrotou o inimigo!', True, (0, 0, 0), (255, 255, 255))
                 player.adicionaXP(random.randint(
@@ -354,10 +354,10 @@ def batalhar(player, mapa):
                 time.sleep(0.5)
                 return
 
-            dano_inimigo = ataquecritico(inimigo)
+            dano_inimigo = ataquecritico_inimigo(inimigo)
 
-            if(random.randint(1, player.status.destreza) <= inimigo.status.acuracia):
-                player.status.vida = player.status.vida - dano_inimigo
+            if(random.randint(1, player.status.destreza + player.armor.destreza + player.weapon.destreza) <= inimigo.status.acuracia):
+                player.status.vida = (player.status.vida + player.armor.vida + player.weapon.vida)- dano_inimigo
                 text9 = basicfont.render(
                     'Dano de ' + str(dano_inimigo) + ' em você!', True, (0, 0, 0), (255, 255, 255))
                 screen.blit(text9, (10, 575))
@@ -405,7 +405,7 @@ def batalhar(player, mapa):
                 if(player.status.vida > player.maxHP):
                     player.status.vida = player.maxHP
 
-                dano_inimigo = ataquecritico(inimigo)
+                dano_inimigo = ataquecritico_inimigo(inimigo)
 
                 if(random.randint(1, player.status.destreza) <= inimigo.status.acuracia):
                     player.status.vida -= dano_inimigo
@@ -448,7 +448,18 @@ def batalhar(player, mapa):
         clock.tick(100)
 
 
-def ataquecritico(personagem):
+def ataquecritico_player(personagem):
+    critico_personagem = personagem.status.critico + personagem.armor.critico + personagem.weapon.critico
+    critico = random.randint(0, critico_personagem)
+    forca = personagem.status.forca + personagem.armor.forca + personagem.weapon.forca
+    if(critico == critico_personagem):
+        ataque = forca * 2
+    else:
+        ataque = forca
+    return ataque
+
+
+def ataquecritico_inimigo(personagem):
     critico = random.randint(0, personagem.status.critico)
     if(critico == personagem.status.critico):
         ataque = personagem.status.forca * 2
