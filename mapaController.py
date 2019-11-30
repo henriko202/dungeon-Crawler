@@ -44,6 +44,25 @@ def carregaMap(arq):
 
     return (mapa)
 
+def carregaMapCheater(arq):
+    mapa = list()
+    arquivo = open(arq, 'r')
+    lines = arquivo.readlines()
+    lines = lines[:-2]
+    for i in lines:
+        linha = list()
+        caracteres = i.split('\n')
+
+        for j in caracteres[0]:
+            if(j != '1'):
+                linha.append(0)
+            else:
+                linha.append(1)
+        mapa.append(linha.copy())
+        linha.clear()
+    arquivo.close()
+    return (mapa)
+
 
 def gera():
     arq = open("mapa.txt", "w+")
@@ -59,7 +78,7 @@ def gera():
         if(i == 25 and j == 36):
             char = "S"
         if(char == "0"):
-            if(random.randint(0, 100) == 0 and baus <= 2):
+            if(random.randint(0, 50) == 0 and baus <= 8):
                 baus += 1
                 char = "B"
         arq.write(char)
