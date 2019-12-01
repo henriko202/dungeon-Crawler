@@ -23,7 +23,10 @@ class Player:
         self.armor = Stats(0, 0, 0, 0, 0, 0)
 
     def adicionaXP(self, quantidade):
-        self.xp += quantidade
+        if(quantidade >= 100):
+            self.xp += 101
+        else:
+            self.xp += quantidade
         if(self.xp % 100 >= 1):
             while (self.xp > 100):
                 if(self.xp % 100 >= 1):
@@ -69,15 +72,18 @@ class Player:
         textP = basicfont.render(
             'Poções: ' + str(self.potions), True, (0, 0, 0), (255, 255, 255))
         #  forca, critico, destreza, acuracia, defesa
+        textStatus = basicfont.render(
+            'Status +Armadura +Arma', True, (0, 0, 0), (255, 255, 255))
         screen.blit(txtLVL, (5, 5))
         screen.blit(textXP, (100, 5))
         screen.blit(txtHP, (200, 5))
-        screen.blit(txtForca, (650, 450))
-        screen.blit(txtCrit, (650, 475))
-        screen.blit(txtDex, (650, 500))
-        screen.blit(txtDefesa, (650, 525))
-        screen.blit(txtAcura, (650, 550))
-        screen.blit(textP, (650, 575))
+        screen.blit(textStatus, (650, 450))
+        screen.blit(txtForca, (650, 475))
+        screen.blit(txtCrit, (650, 500))
+        screen.blit(txtDex, (650, 525))
+        screen.blit(txtDefesa, (650, 550))
+        screen.blit(txtAcura, (650, 575))
+        screen.blit(textP, (650, 600))
 
     def andar(self, direcao, mapa):
         x = self.pos[0]
@@ -116,13 +122,13 @@ class Bau:
         self.armadura = None
 
     def printaBau(self, mapa, player):
-        keyPress = None
+        teclaApertada = None
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit()
                 elif event.type == pygame.KEYDOWN:
-                    keyPress = event.key
+                    teclaApertada = event.key
 
             text1 = basicfont.render(
                 'Baú achado!', True, (0, 0, 0), (255, 255, 255))
@@ -150,7 +156,7 @@ class Bau:
             screen.blit(text3, (10, 575))
             pygame.display.update()
 
-            if(keyPress == pygame.K_c):
+            if(teclaApertada == pygame.K_c):
                 verify = False
                 mapa.matriz[self.pos[0]][self.pos[1]] = "0"
                 if(self.arma):
@@ -159,28 +165,48 @@ class Bau:
                     player.armor = self.armadura
                 player.potions += self.potions
                 return
-            if(keyPress == pygame.K_x):
+            if(teclaApertada == pygame.K_x):
                 return
 
 
 class Mapa:
     def __init__(self, mapa):
         self.matriz = mapa
-        self.fog = None
+        self.fog = mapaController.carregaMap("mapa.txt")
         self.level = 1
         self.baus = []
+
+    def iniciaFog(self):
+        fog = self.fog
+        for i in range(0, len(fog)):
+            for j in range(0, len(fog[i])):
+                fog[i][j] = 0
+        self.fog = fog
+
+    def controlaFog(self, player):
+        esquerda = player.pos[1] - 3 if player.pos[1] - 3 > 0 else 0
+        cima = player.pos[0] - 3 if player.pos[0] - 3 > 0 else 0
+        baixo = player.pos[0] + 4 if player.pos[0] + 4 < 27 else 27
+        direita = player.pos[1] + 4 if player.pos[1] + 4 < 37 else 37
+        for i in range(esquerda, direita):
+            for j in range(cima,  baixo):
+                self.fog[j][i] = 1
+        return
+
+    def printFog(self):
+        for i in range(0, len(self.fog)):
+            for j in range(0, len(self.fog[i])):
+                if(self.fog[i][j] == 0):
+                    screen.blit(
+                        tiles.mapDict["F"], (640+j*16, i*16))
 
     def printMap(self):
         for i in range(0, len(self.matriz)):
             for j in range(0, len(self.matriz[i])):
                 screen.blit(
                     tiles.mapDict["0"], (640+j*16, i*16))
-                if(self.matriz[i][j] == "E" or "S"):
-                    screen.blit(
-                        tiles.mapDict[self.matriz[i][j]], (640+j*16, i*16))
-                else:
-                    screen.blit(
-                        tiles.mapDict[self.matriz[i][j]], (640+j*16, i*16))
+                screen.blit(
+                    tiles.mapDict[self.matriz[i][j]], (640+j*16, i*16))
         text1 = basicfont.render(
             'Profundidade: ' + str(self.level), True, (0, 0, 0), (255, 255, 255))
         screen.blit(text1, (975, 450))
@@ -266,22 +292,23 @@ def printaControles():
 
 
 def batalhar(player, mapa):
-    done = False
-    keyPress = None
+    terminado = False
+    teclaApertada = None
 
     inimigo = Inimigo(mapa.level, player)
 
-    while not done:
+    while not terminado:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
             elif event.type == pygame.KEYDOWN:
-                keyPress = event.key
+                teclaApertada = event.key
 
         screen.fill((255, 255, 255))  # fundo da tela
         screen.blit(tiles.modoDict['I'], (0, 0))
         printaControles()
         mapa.printMap()
+        mapa.printFog()
         player.desenhaPlayer()
         player.mostraStats()
 
@@ -310,7 +337,7 @@ def batalhar(player, mapa):
         screen.blit(text4, (200, 550))
 
         # se fugir
-        if(keyPress == pygame.K_f):
+        if(teclaApertada == pygame.K_f):
             fugir = random.randint(
                 0, player.status.destreza + player.armor.destreza + player.weapon.destreza)
             if(fugir >= inimigo.status.destreza):
@@ -346,7 +373,7 @@ def batalhar(player, mapa):
             pygame.display.update()
             time.sleep(0.5)
 
-        if(keyPress == pygame.K_b):
+        if(teclaApertada == pygame.K_b):
             dano = ataquecritico_player(player)
 
             text8 = basicfont.render(
@@ -362,7 +389,7 @@ def batalhar(player, mapa):
                 text10 = basicfont.render(
                     'Você derrotou o inimigo!', True, (0, 0, 0), (255, 255, 255))
                 player.adicionaXP(random.randint(
-                    50, inimigo.vida if inimigo.vida > 50 else 100))
+                    50, inimigo.vida if inimigo.vida > 50 and inimigo.vida < 200 else 65))
                 screen.blit(text10, (200, 200))
                 pygame.display.update()
                 time.sleep(0.5)
@@ -405,7 +432,7 @@ def batalhar(player, mapa):
             time.sleep(0.5)
 
         # se tomar poção
-        if(keyPress == pygame.K_p):
+        if(teclaApertada == pygame.K_p):
             if (player.potions == 0):
                 text11 = basicfont.render(
                     'Você não tem poções!', True, (0, 0, 0), (255, 255, 255))
@@ -458,7 +485,7 @@ def batalhar(player, mapa):
             time.sleep(0.5)
 
         player.mostraStats()
-        keyPress = None
+        teclaApertada = None
         pygame.display.update()
         clock.tick(100)
 
@@ -466,9 +493,9 @@ def batalhar(player, mapa):
 def ataquecritico_player(personagem):
     critico_personagem = personagem.status.critico + \
         personagem.armor.critico + personagem.weapon.critico
-    critico = random.randint(0, critico_personagem)
+    critico = random.randint(0, critico_personagem*2)
     forca = personagem.status.forca + personagem.armor.forca + personagem.weapon.forca
-    if(critico == critico_personagem):
+    if(critico >= critico_personagem):
         ataque = forca * 2
     else:
         ataque = forca
@@ -476,8 +503,8 @@ def ataquecritico_player(personagem):
 
 
 def ataquecritico_inimigo(personagem):
-    critico = random.randint(0, personagem.status.critico)
-    if(critico == personagem.status.critico):
+    critico = random.randint(0, personagem.status.critico*2)
+    if(critico >= personagem.status.critico):
         ataque = personagem.status.forca * 2
     else:
         ataque = personagem.status.forca
@@ -491,23 +518,27 @@ if __name__ == '__main__':
         'JogoFDP (First Dungeon Penetration, claramente)')
     screen = pygame.display.set_mode((1235, 625))
     clock = pygame.time.Clock()
-    done = False
+    terminado = False
     mapaController.gera()
     (map_bits) = mapaController.carregaMap("mapa.txt")
     mapa = Mapa(map_bits)
+    mapa.iniciaFog()
     player = Player()
     mapa.geraItens(player.nivel, mapa)
     basicfont = pygame.font.SysFont(None, 25)
-    keyPress = None
+    teclaApertada = None
     cheat = False
-    while not done:
+    while not terminado:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                done = True
+                terminado = True
             elif event.type == pygame.KEYDOWN:
-                keyPress = event.key
+                teclaApertada = event.key
                 if event.key == pygame.K_k:
                     cheat = True
+            # while key pressed down?
+            # if key pressed down?
+            # i'm giving up....
                 # if event.key == pygame.K_LEFT:        # left arrow turns left
                 #     pressed_left = True
                 # elif event.key == pygame.K_RIGHT:     # right arrow turns right
@@ -531,13 +562,19 @@ if __name__ == '__main__':
         screen.fill((255, 255, 255))  # fundo da tela
         printaControles()
         mapa.printMap()
+        mapa.controlaFog(player)
+        mapa.printFog()
         posAntes = player.pos
         screen.blit(tiles.modoDict[' '], (0, 0))
         player.mostraStats()
         player.desenhaPlayer()
+        player.andar(teclaApertada, mapa.matriz)
+        teclaApertada = None
+        posDepois = player.pos
 
         if(cheat):
             mapa.printMapCheater(cheater.achaSaida(player.pos))
+            mapa.printFog()
             player.desenhaPlayer()
             pygame.display.update()
 
@@ -548,15 +585,18 @@ if __name__ == '__main__':
             mapa = Mapa(map_bits)
             mapa.level += 1
             mapa.geraItens(player.nivel, mapa)
+            mapa.iniciaFog()
+            mapa.printFog()
+            pygame.display.update()
 
-        player.andar(keyPress, mapa.matriz)
-        keyPress = None
-        posDepois = player.pos
         if(mapa.matriz[player.pos[0]][player.pos[1]] == "B"):
+            mapa.printFog()
+            pygame.display.update()
             screen.blit(tiles.modoDict['B'], (0, 0))
             for conteudo in mapa.baus:
                 if(conteudo.pos == player.pos and (posAntes != posDepois)):
                     mapa.printMap()
+                    mapa.printFog()
                     player.desenhaPlayer()
                     pygame.display.update()
                     conteudo.printaBau(mapa, player)
@@ -565,6 +605,9 @@ if __name__ == '__main__':
         if(posAntes != posDepois and posicao != "S" and posicao != "B"):
             batalha = random.randint(0, 10)
             if(batalha == 10):
+                mapa.printFog()
+                pygame.display.update()
                 batalhar(player, mapa)
+
         pygame.display.update()
         clock.tick(60)

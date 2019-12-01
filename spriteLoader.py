@@ -13,6 +13,7 @@ mapDict = {
     '0': pygame.image.load('tileset/floor/floor_1.png'),
     'S': pygame.image.load('tileset/floor/floor_ladder.png'),
     'E': pygame.image.load('tileset/floor/floor_2.png'),
+    'F': pygame.image.load('tileset/floor/fog.png'),
 }
 modoDict = {
     ' ': pygame.image.load('./tileset/corredor.png'),
