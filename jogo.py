@@ -166,7 +166,7 @@ class Bau:
                 player.potions += self.potions
                 return
             if(teclaApertada == pygame.K_x):
-                return
+                return False
 
 
 class Mapa:
@@ -268,13 +268,15 @@ class Inimigo:
     def __init__(self, level, player):
         self.nivel = 1
         if(player.nivel > 1):
-            self.nivel = player.nivel/2
-        self.vida = random.randint(50, 90*level*self.nivel)
-        forca = random.randint(8, 14*level*self.nivel)
-        defesa = random.randint(8, 14*level*self.nivel)
-        critico = random.randint(8, 14*level*self.nivel)
-        destreza = random.randint(8, 14*level*self.nivel)
-        acuracia = random.randint(8, 14*level*self.nivel)
+            self.nivel = int(player.nivel/2)
+            if(self.nivel) <= 0:
+                self.nivel = 1
+        self.vida = random.randint(50, 75*level*self.nivel)
+        forca = random.randint(8, 12*level*self.nivel)
+        defesa = random.randint(8, 12*level*self.nivel)
+        critico = random.randint(8, 12*level*self.nivel)
+        destreza = random.randint(8, 12*level*self.nivel)
+        acuracia = random.randint(8, 12*level*self.nivel)
         self.status = Stats(self.vida, forca, critico,
                             destreza, acuracia, defesa)
 
@@ -570,6 +572,7 @@ if __name__ == '__main__':
         player.desenhaPlayer()
         player.andar(teclaApertada, mapa.matriz)
         teclaApertada = None
+        depois = True
         posDepois = player.pos
 
         if(cheat):
@@ -581,30 +584,32 @@ if __name__ == '__main__':
         if(mapa.matriz[player.pos[0]][player.pos[1]] == "S"):
             player.pos = (1, 1)
             mapaController.gera()
+            level = mapa.level + 1
             (map_bits) = mapaController.carregaMap("mapa.txt")
             mapa = Mapa(map_bits)
-            mapa.level += 1
+            mapa.level = level
             mapa.geraItens(player.nivel, mapa)
             mapa.iniciaFog()
             mapa.printFog()
             pygame.display.update()
 
         if(mapa.matriz[player.pos[0]][player.pos[1]] == "B"):
-            mapa.printFog()
-            pygame.display.update()
-            screen.blit(tiles.modoDict['B'], (0, 0))
             for conteudo in mapa.baus:
-                if(conteudo.pos == player.pos and (posAntes != posDepois)):
+                if(conteudo.pos == player.pos and (posAntes != posDepois) and depois != False):
+                    mapa.printFog()
+                    pygame.display.update()
+                    screen.blit(tiles.modoDict['B'], (0, 0))
                     mapa.printMap()
                     mapa.printFog()
                     player.desenhaPlayer()
                     pygame.display.update()
-                    conteudo.printaBau(mapa, player)
+                    depois = conteudo.printaBau(mapa, player)
 
         posicao = mapa.matriz[player.pos[0]][player.pos[1]]
         if(posAntes != posDepois and posicao != "S" and posicao != "B"):
-            batalha = random.randint(0, 10)
-            if(batalha == 10):
+            depois = True
+            batalha = random.randint(0, 20)
+            if(batalha == 20):
                 mapa.printFog()
                 pygame.display.update()
                 batalhar(player, mapa)
