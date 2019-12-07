@@ -45,35 +45,47 @@ class Player:
             'XP: ' + str(self.xp), True, (0, 0, 0), (255, 255, 255))
         txtLVL = basicfont.render(
             'Nível: ' + str(self.nivel), True, (0, 0, 0), (255, 255, 255))
-        txtArmorHP = " +" + str(self.armor.vida)
-        txtWeaponHP = " +" + str(self.weapon.vida)
+        txtArmorHP = " + " + str(self.armor.vida)
+        txtWeaponHP = " + " + str(self.weapon.vida)
+        totalHP = " = " + str(self.status.vida +
+                              self.armor.vida + self.weapon.vida)
         txtHP = basicfont.render(
-            'Vida: ' + str(self.status.vida) + txtArmorHP + txtWeaponHP, True, (0, 0, 0), (255, 255, 255))
-        txtArmorF = " +" + str(self.armor.forca)
-        txtWeaponF = " +" + str(self.weapon.forca)
+            'Vida: ' + str(self.status.vida) + txtArmorHP + txtWeaponHP + totalHP, True, (0, 0, 0), (255, 255, 255))
+        txtArmorF = " + " + str(self.armor.forca)
+        txtWeaponF = " + " + str(self.weapon.forca)
+        totalF = " = " + str(self.status.forca +
+                             self.armor.forca + self.weapon.forca)
         txtForca = basicfont.render(
-            'Força: ' + str(self.status.forca) + txtArmorF + txtWeaponF, True, (0, 0, 0), (255, 255, 255))
-        txtArmorD = " +" + str(self.armor.defesa)
-        txtWeaponD = " +" + str(self.weapon.defesa)
+            'Força: ' + str(self.status.forca) + txtArmorF + txtWeaponF + totalF, True, (0, 0, 0), (255, 255, 255))
+        txtArmorD = " + " + str(self.armor.defesa)
+        txtWeaponD = " + " + str(self.weapon.defesa)
+        totalD = " = " + str(self.status.defesa +
+                             self.armor.defesa + self.weapon.defesa)
         txtDefesa = basicfont.render(
-            'Defesa: ' + str(self.status.defesa) + txtArmorD + txtWeaponD, True, (0, 0, 0), (255, 255, 255))
-        txtArmorA = " +" + str(self.armor.acuracia)
-        txtWeaponA = " +" + str(self.weapon.acuracia)
+            'Defesa: ' + str(self.status.defesa) + txtArmorD + txtWeaponD + totalD, True, (0, 0, 0), (255, 255, 255))
+        txtArmorA = " + " + str(self.armor.acuracia)
+        txtWeaponA = " + " + str(self.weapon.acuracia)
+        totalA = " = " + str(self.status.acuracia +
+                             self.armor.acuracia + self.weapon.acuracia)
         txtAcura = basicfont.render(
-            'Acurácia: ' + str(self.status.acuracia) + txtArmorA + txtWeaponA, True, (0, 0, 0), (255, 255, 255))
-        txtArmorH = " +" + str(self.armor.destreza)
-        txtWeaponH = " +" + str(self.weapon.destreza)
+            'Acurácia: ' + str(self.status.acuracia) + txtArmorA + txtWeaponA + totalA, True, (0, 0, 0), (255, 255, 255))
+        txtArmorH = " + " + str(self.armor.destreza)
+        txtWeaponH = " + " + str(self.weapon.destreza)
+        totalH = " = " + str(self.status.destreza +
+                             self.armor.destreza + self.weapon.destreza)
         txtDex = basicfont.render(
-            'Destreza: ' + str(self.status.destreza) + txtArmorH + txtWeaponH, True, (0, 0, 0), (255, 255, 255))
-        txtArmorC = " +" + str(self.armor.critico)
-        txtWeaponC = " +" + str(self.weapon.critico)
+            'Destreza: ' + str(self.status.destreza) + txtArmorH + txtWeaponH + totalH, True, (0, 0, 0), (255, 255, 255))
+        txtArmorC = " + " + str(self.armor.critico)
+        txtWeaponC = " + " + str(self.weapon.critico)
+        totalC = " = " + str(self.status.critico +
+                             self.armor.critico + self.weapon.critico)
         txtCrit = basicfont.render(
-            'Crítico: ' + str(self.status.critico) + txtArmorC + txtWeaponC, True, (0, 0, 0), (255, 255, 255))
+            'Crítico: ' + str(self.status.critico) + txtArmorC + txtWeaponC + totalC, True, (0, 0, 0), (255, 255, 255))
         textP = basicfont.render(
             'Poções: ' + str(self.potions), True, (0, 0, 0), (255, 255, 255))
         #  forca, critico, destreza, acuracia, defesa
         textStatus = basicfont.render(
-            'Status +Armadura +Arma', True, (0, 0, 0), (255, 255, 255))
+            'Status + Armadura + Arma', True, (0, 0, 0), (255, 255, 255))
         screen.blit(txtLVL, (5, 5))
         screen.blit(textXP, (100, 5))
         screen.blit(txtHP, (200, 5))
@@ -129,17 +141,56 @@ class Bau:
                     exit()
                 elif event.type == pygame.KEYDOWN:
                     teclaApertada = event.key
-
+            player.mostraStats()
             text1 = basicfont.render(
                 'Baú achado!', True, (0, 0, 0), (255, 255, 255))
             string = None
             if(self.arma):
-                # vida, forca, critico, destreza, acuracia, defesa
-                string = "Arma: +{} +{} +{} +{} +{} +{}".format(
-                    self.arma.vida, self.arma.forca, self.arma.critico, self.arma.destreza, self.arma.acuracia, self.arma.defesa)
+                txtVidaArma = (self.arma.vida - player.weapon.vida)
+                txtForcaArma = (self.arma.forca - player.weapon.forca)
+                txtCriticoArma = (self.arma.critico - player.weapon.critico)
+                txtDestrezaArma = (self.arma.destreza - player.weapon.destreza)
+                txtAcuraciaArma = (self.arma.acuracia - player.weapon.acuracia)
+                txtDefesaArma = (self.arma.defesa - player.weapon.defesa)
+                txtVidaArma = "+" + \
+                    str(txtVidaArma) if txtVidaArma >= 0 else txtVidaArma
+                txtForcaArma = "+" + \
+                    str(txtForcaArma) if txtForcaArma >= 0 else txtForcaArma
+                txtCriticoArma = "+" + \
+                    str(txtCriticoArma) if txtCriticoArma >= 0 else txtCriticoArma
+                txtDestrezaArma = "+" + \
+                    str(txtDestrezaArma) if txtDestrezaArma >= 0 else txtDestrezaArma
+                txtAcuraciaArma = "+" + \
+                    str(txtAcuraciaArma) if txtAcuraciaArma >= 0 else txtAcuraciaArma
+                txtDefesaArma = "+" + \
+                    str(txtDefesaArma) if txtDefesaArma >= 0 else txtDefesaArma
+                string = "Arma: {} {} {} {} {} {}".format(
+                    txtVidaArma, txtForcaArma, txtCriticoArma, txtDestrezaArma, txtAcuraciaArma, txtDefesaArma)
             else:
-                string = "Armadura: +{} +{} +{} +{} +{} +{}".format(
-                    self.armadura.vida, self.armadura.forca, self.armadura.critico, self.armadura.destreza, self.armadura.acuracia, self.armadura.defesa)
+                txtVidaArmadura = (self.armadura.vida - player.armor.vida)
+                txtForcaArmadura = (self.armadura.forca - player.armor.forca)
+                txtCriticoArmadura = (
+                    self.armadura.critico - player.armor.critico)
+                txtDestrezaArmadura = (
+                    self.armadura.destreza - player.armor.destreza)
+                txtAcuraciaArmadura = (
+                    self.armadura.acuracia - player.armor.acuracia)
+                txtDefesaArmadura = (
+                    self.armadura.defesa - player.armor.defesa)
+                txtVidaArmadura = "+" + \
+                    str(txtVidaArmadura) if txtVidaArmadura >= 0 else txtVidaArmadura
+                txtForcaArmadura = "+" + \
+                    str(txtForcaArmadura) if txtForcaArmadura >= 0 else txtForcaArmadura
+                txtCriticoArmadura = "+" + \
+                    str(txtCriticoArmadura) if txtCriticoArmadura >= 0 else txtCriticoArmadura
+                txtDestrezaArmadura = "+" + \
+                    str(txtDestrezaArmadura) if txtDestrezaArmadura >= 0 else txtDestrezaArmadura
+                txtAcuraciaArmadura = "+" + \
+                    str(txtAcuraciaArmadura) if txtAcuraciaArmadura >= 0 else txtAcuraciaArmadura
+                txtDefesaArmadura = "+" + \
+                    str(txtDefesaArmadura) if txtDefesaArmadura >= 0 else txtDefesaArmadura
+                string = "Armadura: {} {} {} {} {} {}".format(
+                    txtVidaArmadura, txtForcaArmadura, txtCriticoArmadura, txtDestrezaArmadura, txtAcuraciaArmadura, txtDefesaArmadura)
             text2 = basicfont.render(
                 'C - Pegar itens', True, (0, 0, 0), (255, 255, 255))
             text3 = basicfont.render(
@@ -149,15 +200,14 @@ class Bau:
             pocoes = basicfont.render(
                 "E " + str(self.potions) + " poções", True, (0, 0, 0), (255, 255, 255))
 
-            screen.blit(text1, (10, 475))
-            screen.blit(conteudo, (10, 500))
-            screen.blit(pocoes, (10, 525))
-            screen.blit(text2, (10, 550))
-            screen.blit(text3, (10, 575))
+            screen.blit(text1, (200, 475))
+            screen.blit(conteudo, (200, 500))
+            screen.blit(pocoes, (200, 525))
+            screen.blit(text2, (200, 550))
+            screen.blit(text3, (200, 575))
             pygame.display.update()
 
             if(teclaApertada == pygame.K_c):
-                verify = False
                 mapa.matriz[self.pos[0]][self.pos[1]] = "0"
                 if(self.arma):
                     player.weapon = self.arma
@@ -287,10 +337,10 @@ def printaControles():
     text2 = basicfont.render('S - Baixo', True, (0, 0, 0), (255, 255, 255))
     text3 = basicfont.render('A - Esquerda', True, (0, 0, 0), (255, 255, 255))
 
-    screen.blit(text1, (875, 450))
-    screen.blit(text2, (875, 475))
-    screen.blit(text3, (875, 500))
-    screen.blit(text4, (875, 525))
+    screen.blit(text1, (975, 475))
+    screen.blit(text2, (975, 500))
+    screen.blit(text3, (975, 525))
+    screen.blit(text4, (975, 550))
 
 
 def batalhar(player, mapa):
@@ -333,10 +383,10 @@ def batalhar(player, mapa):
         text4 = basicfont.render(
             'F - fujir', True, (0, 0, 0), (255, 255, 255))
 
-        screen.blit(text1, (200, 475))
-        screen.blit(text2, (200, 500))
-        screen.blit(text3, (200, 525))
-        screen.blit(text4, (200, 550))
+        screen.blit(text1, (350, 475))
+        screen.blit(text2, (350, 500))
+        screen.blit(text3, (350, 525))
+        screen.blit(text4, (350, 550))
 
         # se fugir
         if(teclaApertada == pygame.K_f):
@@ -564,13 +614,13 @@ if __name__ == '__main__':
         screen.fill((255, 255, 255))  # fundo da tela
         printaControles()
         mapa.printMap()
-        mapa.controlaFog(player)
         mapa.printFog()
         posAntes = player.pos
         screen.blit(tiles.modoDict[' '], (0, 0))
         player.mostraStats()
         player.desenhaPlayer()
         player.andar(teclaApertada, mapa.matriz)
+        mapa.controlaFog(player)
         teclaApertada = None
         depois = True
         posDepois = player.pos
